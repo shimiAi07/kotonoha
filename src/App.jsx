@@ -29,6 +29,7 @@ const FB_API_KEY   = "AIzaSyDwKmdMKYRAiVL7AhenmS4tbx4uYy388Mg";
 const FB_PROJECT   = "kotonoha-64f0b";
 const FB_AUTH_URL  = "https://identitytoolkit.googleapis.com/v1/accounts";
 const FB_STORE_URL = `https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents`;
+const ANTHROPIC_API_KEY = process.env.REACT_APP_ANTHROPIC_API_KEY || "";
 
 // Token storage
 let _fbUser = null; // { uid, email, idToken, refreshToken }
@@ -165,6 +166,7 @@ async function callAPI(system, messages) {
       "Content-Type":"application/json",
       "anthropic-version":"2023-06-01",
       "anthropic-dangerous-direct-browser-access":"true",
+      "x-api-key": ANTHROPIC_API_KEY,
     },
     body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000, system, messages }),
   });
@@ -226,7 +228,7 @@ function BookModal({ ds, diaries, onClose, onChat, t }) {
     const conv = msgs.map(m=>(m.role==="user"?"ユーザー":"AI")+": "+m.content).join("\n");
         fetch("https://api.anthropic.com/v1/messages", {
       method:"POST",
-      headers:{ "Content-Type":"application/json", "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true" },
+      headers:{ "Content-Type":"application/json", "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": ANTHROPIC_API_KEY },
       body:JSON.stringify({
         model:"claude-sonnet-4-20250514", max_tokens:1000,
         system: SUMMARY_SYSTEM,
