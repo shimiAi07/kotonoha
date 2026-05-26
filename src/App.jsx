@@ -1913,6 +1913,26 @@ export default function App() {
   const textRef = useRef(null);
   const idRef = useRef(1);
   const isComposing = useRef(false);
+
+  // iOS Safari keyboard fix
+  const [appHeight, setAppHeight] = useState(
+    typeof window !== "undefined" ? (window.visualViewport?.height || window.innerHeight) : 800
+  );
+  useEffect(() => {
+    const update = () => {
+      const h = window.visualViewport?.height || window.innerHeight;
+      setAppHeight(h);
+      document.documentElement.style.setProperty("--app-height", h + "px");
+    };
+    update();
+    window.visualViewport?.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("scroll", update);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("scroll", update);
+    };
+  }, []);
+
   const t = TONES[tone];
 
   useEffect(()=>{
@@ -2223,7 +2243,7 @@ export default function App() {
       </div>
 
       {/* Input */}
-      <div style={{ padding:"10px 18px 16px",background:"#EAF1F4",borderTop:"1px solid #ffffff06" }}>
+      <div style={{ padding:"10px 18px 16px",background:"#EAF1F4",borderTop:"1px solid #ffffff06",flexShrink:0,paddingBottom:"calc(16px + env(safe-area-inset-bottom, 0px))" }}>
 
         <div style={{ display:"flex",gap:10,alignItems:"flex-end",background:"#D8E8EE",border:`1px solid ${t.color}22`,borderRadius:18,padding:"11px 14px" }}>
           <textarea
@@ -2277,8 +2297,8 @@ export default function App() {
   ];
 
   return (
-    <div style={{ minHeight:"100vh",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif" }}>
-      <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100vh" }}>
+    <div style={{ height:appHeight+"px",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
+      <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%",overflow:"hidden" }}>
 
         {/* Page content */}
         <div style={{ flex:1,display:"flex",flexDirection:"column",overflow:"hidden" }}>
@@ -2325,6 +2345,10 @@ export default function App() {
           display:"flex",background:"#EAF1F4",
           borderTop:"1px solid #ffffff08",
           paddingBottom:"env(safe-area-inset-bottom,0px)",
+          flexShrink:0,
+          height: keyboardHeight > 0 ? 0 : "auto",
+          overflow: keyboardHeight > 0 ? "hidden" : "visible",
+          transition:"height 0.2s ease",
         }}>
           {NAV.map(nav=>(
             <button key={nav.key} onClick={()=>setTab(nav.key)} style={{
@@ -2362,6 +2386,7 @@ export default function App() {
         textarea::placeholder{color:#252530}
         ::-webkit-scrollbar{width:3px}
         ::-webkit-scrollbar-thumb{background:#B8CED8;border-radius:2px}
+        html, body { height:100%; overflow:hidden; margin:0; padding:0; }
       `}</style>
     </div>
   );
