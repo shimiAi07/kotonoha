@@ -2172,12 +2172,14 @@ export default function App() {
       {/* Date picker panel */}
       <div style={{
         overflow:"hidden",
-        maxHeight:showDatePicker?"420px":"0px",
+        maxHeight:showDatePicker?"520px":"0px",
         opacity:showDatePicker?1:0,
         transition:"max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.35s cubic-bezier(0.4,0,0.2,1)",
         background:"#ffffff90",
         borderBottom:"1px solid #00000008",
+        borderRadius:showDatePicker?"0 0 16px 16px":"0",
         position:"relative",zIndex:20,
+        overflowY:"auto",
       }}>
         <div style={{ padding:"10px 16px 4px",fontSize:11,color:"#5a7a8a",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
           <span>📅 日付を変更（会話データも移動します）</span>
