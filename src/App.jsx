@@ -168,7 +168,7 @@ async function callAPI(system, messages) {
       "anthropic-dangerous-direct-browser-access":"true",
       "x-api-key": ANTHROPIC_API_KEY,
     },
-    body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000, system, messages }),
+    body:JSON.stringify({ model:"claude-sonnet-4-5", max_tokens:1000, system, messages }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`${res.status}: ${JSON.stringify(data)}`);
@@ -230,7 +230,7 @@ function BookModal({ ds, diaries, onClose, onChat, t }) {
       method:"POST",
       headers:{ "Content-Type":"application/json", "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": ANTHROPIC_API_KEY },
       body:JSON.stringify({
-        model:"claude-sonnet-4-20250514", max_tokens:1000,
+        model:"claude-sonnet-4-5", max_tokens:1000,
         system: SUMMARY_SYSTEM,
         messages:[{ role:"user", content:"以下は"+dateStr+"の会話です：\n\n"+conv }],
       }),
