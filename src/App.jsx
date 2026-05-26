@@ -2340,9 +2340,6 @@ export default function App() {
           borderTop:"1px solid #ffffff08",
           paddingBottom:"env(safe-area-inset-bottom,0px)",
           flexShrink:0,
-          height: keyboardHeight > 0 ? 0 : "auto",
-          overflow: keyboardHeight > 0 ? "hidden" : "visible",
-          transition:"height 0.2s ease",
         }}>
           {NAV.map(nav=>(
             <button key={nav.key} onClick={()=>setTab(nav.key)} style={{
