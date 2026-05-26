@@ -1914,18 +1914,7 @@ export default function App() {
   const idRef = useRef(1);
   const isComposing = useRef(false);
 
-  // iOS Safari keyboard fix
-  const [appHeight, setAppHeight] = useState("100dvh");
-  useEffect(() => {
-    const update = () => {
-      if (window.visualViewport) {
-        setAppHeight(window.visualViewport.height + "px");
-      }
-    };
-    update();
-    window.visualViewport?.addEventListener("resize", update);
-    return () => window.visualViewport?.removeEventListener("resize", update);
-  }, []);
+
 
   const t = TONES[tone];
 
@@ -2291,7 +2280,7 @@ export default function App() {
   ];
 
   return (
-    <div style={{ height:appHeight,background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
+    <div style={{ height:"100dvh",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
       <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%",overflow:"hidden" }}>
 
         {/* Page content */}
@@ -2377,7 +2366,8 @@ export default function App() {
         textarea::placeholder{color:#252530}
         ::-webkit-scrollbar{width:3px}
         ::-webkit-scrollbar-thumb{background:#B8CED8;border-radius:2px}
-        html, body { height:100%; overflow:hidden; margin:0; padding:0; }
+        html { height: -webkit-fill-available; }
+        body { min-height: 100vh; min-height: -webkit-fill-available; margin:0; padding:0; }
       `}</style>
     </div>
   );
