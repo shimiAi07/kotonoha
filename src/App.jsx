@@ -1915,22 +1915,16 @@ export default function App() {
   const isComposing = useRef(false);
 
   // iOS Safari keyboard fix
-  const [appHeight, setAppHeight] = useState(
-    typeof window !== "undefined" ? (window.visualViewport?.height || window.innerHeight) : 800
-  );
+  const [appHeight, setAppHeight] = useState("100dvh");
   useEffect(() => {
     const update = () => {
-      const h = window.visualViewport?.height || window.innerHeight;
-      setAppHeight(h);
-      document.documentElement.style.setProperty("--app-height", h + "px");
+      if (window.visualViewport) {
+        setAppHeight(window.visualViewport.height + "px");
+      }
     };
     update();
     window.visualViewport?.addEventListener("resize", update);
-    window.visualViewport?.addEventListener("scroll", update);
-    return () => {
-      window.visualViewport?.removeEventListener("resize", update);
-      window.visualViewport?.removeEventListener("scroll", update);
-    };
+    return () => window.visualViewport?.removeEventListener("resize", update);
   }, []);
 
   const t = TONES[tone];
@@ -2297,7 +2291,7 @@ export default function App() {
   ];
 
   return (
-    <div style={{ height:appHeight+"px",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
+    <div style={{ height:appHeight,background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
       <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%",overflow:"hidden" }}>
 
         {/* Page content */}
