@@ -1919,11 +1919,15 @@ export default function App() {
   // iOS Safari keyboard fix using visualViewport
   const [vvHeight, setVvHeight] = useState(0);
   const [vvOffsetTop, setVvOffsetTop] = useState(0);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   useEffect(() => {
+    const fullHeight = window.screen.height;
     const update = () => {
       if (window.visualViewport) {
-        setVvHeight(window.visualViewport.height);
+        const h = window.visualViewport.height;
+        setVvHeight(h);
         setVvOffsetTop(window.visualViewport.offsetTop);
+        setIsKeyboardOpen(h < fullHeight * 0.75);
       }
     };
     update();
@@ -2357,6 +2361,9 @@ export default function App() {
           borderTop:"1px solid #ffffff08",
           paddingBottom:"env(safe-area-inset-bottom,0px)",
           flexShrink:0,
+          maxHeight: isKeyboardOpen ? "0px" : "80px",
+          overflow:"hidden",
+          transition:"max-height 0.2s ease",
         }}>
           {NAV.map(nav=>(
             <button key={nav.key} onClick={()=>setTab(nav.key)} style={{
