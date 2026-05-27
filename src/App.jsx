@@ -2014,7 +2014,25 @@ export default function App() {
     } catch(e){ console.error("score error",e); }
   };
 
-  const closeSummary = () => {
+  const headerRestoreTimer = useRef(null);
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+
+  // Hide header when AI replies (mobile only)
+  const hideHeaderOnReply = () => {
+    if (!isMobile) return;
+    setHeaderHidden(true);
+  };
+
+  // When keyboard closes, restore header after 3 seconds
+  useEffect(() => {
+    if (!isKeyboardOpen && headerHidden) {
+      headerRestoreTimer.current = setTimeout(() => {
+        setHeaderHidden(false);
+      }, 3000);
+    }
+    return () => clearTimeout(headerRestoreTimer.current);
+  }, [isKeyboardOpen]);
     setSummaryClosing(true);
     setTimeout(() => { setShowSummary(false); setSummaryClosing(false); }, 350);
   };
@@ -2044,6 +2062,7 @@ export default function App() {
       const reply = await callAPI(TONES[toneKey].system(dayLabel(dateKey)),apiMsgs);
       const aiMsg={ id:idRef.current++,role:"assistant",content:reply };
       setDiaries(d=>({ ...d,[dateKey]:{ ...d[dateKey],messages:[...(d[dateKey]?.messages||updated),aiMsg],tone:toneKey } }));
+      hideHeaderOnReply();
       // Analyze mood score in background after reply
       analyzeScore(dateKey,[...updated,aiMsg]);
     } catch(e) {
@@ -2065,8 +2084,15 @@ export default function App() {
   // ── Diary tab content
   const DiaryTab = (
     <div style={{ display:"flex",flexDirection:"column",flex:1,overflow:"hidden" }}>
-      {/* Header */}
-      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,position:"sticky",top:0,background:"#EAF1F4",zIndex:30 }}>
+      {/* Header - auto-hide on mobile after AI reply */}
+      <div style={{
+        overflow:"hidden",
+        maxHeight: headerHidden ? "0px" : "80px",
+        opacity: headerHidden ? 0 : 1,
+        transition:"max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease",
+        flexShrink:0,
+      }}>
+      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30 }}>
         <div style={{ display:"flex",alignItems:"center",gap:12 }}>
           <div>
             <div style={{ fontSize:19,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
@@ -2094,6 +2120,7 @@ export default function App() {
             <span style={{ fontSize:9,opacity:0.55,marginLeft:1 }}>{showTones?"▲":"▼"}</span>
           </button>
         </div>
+      </div>
       </div>
 
       {/* Tone panel - smooth slide down */}
@@ -2275,7 +2302,7 @@ export default function App() {
             </svg>
           </button>
         </div>
-        <div style={{ fontSize:10,color:"#B8CED8",textAlign:"center",marginTop:6 }}>変換確定後にEnter で送信 · Shift+Enter で改行</div>
+        {!isKeyboardOpen && <div style={{ fontSize:10,color:"#B8CED8",textAlign:"center",marginTop:6 }}>変換確定後にEnter で送信 · Shift+Enter で改行</div>}
       </div>
     </div>
   );
@@ -2311,7 +2338,7 @@ export default function App() {
       background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",
       fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",
       overflow:"hidden",
-      transition:"top 0.05s, height 0.05s",
+      transition:"none",
     }}>
       <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%",overflow:"hidden" }}>
 
