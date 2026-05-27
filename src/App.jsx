@@ -1916,6 +1916,25 @@ export default function App() {
 
 
 
+  // iOS Safari keyboard fix using visualViewport
+  const [vvHeight, setVvHeight] = useState(0);
+  const [vvOffsetTop, setVvOffsetTop] = useState(0);
+  useEffect(() => {
+    const update = () => {
+      if (window.visualViewport) {
+        setVvHeight(window.visualViewport.height);
+        setVvOffsetTop(window.visualViewport.offsetTop);
+      }
+    };
+    update();
+    window.visualViewport?.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("scroll", update);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("scroll", update);
+    };
+  }, []);
+
   const t = TONES[tone];
 
   useEffect(()=>{
@@ -2280,7 +2299,16 @@ export default function App() {
   ];
 
   return (
-    <div style={{ height:"100dvh",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
+    <div style={{
+      position:"fixed",
+      top: vvOffsetTop + "px",
+      left:0, right:0,
+      height: vvHeight ? vvHeight+"px" : "100dvh",
+      background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",
+      fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",
+      overflow:"hidden",
+      transition:"top 0.05s, height 0.05s",
+    }}>
       <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%",overflow:"hidden" }}>
 
         {/* Page content */}
@@ -2366,8 +2394,7 @@ export default function App() {
         textarea::placeholder{color:#252530}
         ::-webkit-scrollbar{width:3px}
         ::-webkit-scrollbar-thumb{background:#B8CED8;border-radius:2px}
-        html { height: -webkit-fill-available; }
-        body { min-height: 100vh; min-height: -webkit-fill-available; margin:0; padding:0; }
+        html, body { margin:0; padding:0; height:100%; overflow:hidden; }
       `}</style>
     </div>
   );
