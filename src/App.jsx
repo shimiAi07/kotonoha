@@ -2289,7 +2289,10 @@ export default function App() {
             onChange={e=>{ setInput(e.target.value); e.target.style.height="auto"; e.target.style.height=Math.min(e.target.scrollHeight,130)+"px"; }}
             onCompositionStart={()=>{ isComposing.current=true; }}
             onCompositionEnd={()=>{ isComposing.current=false; }}
-            onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey&&!isComposing.current){ e.preventDefault(); send(); } }}
+            onKeyDown={e=>{
+              const isMobileDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+              if(e.key==="Enter"&&!e.shiftKey&&!isComposing.current&&!isMobileDevice){ e.preventDefault(); send(); }
+            }}
             placeholder={isPast?`${dayLabel(selected)}のことを話してね…`:"今日のこと、気持ちを話してね…"}
             rows={1}
             style={{ flex:1,background:"transparent",border:"none",outline:"none",color:"#1a2a32",fontSize:13.5,lineHeight:1.65,resize:"none",fontFamily:"inherit",maxHeight:130,overflowY:"auto" }}
@@ -2306,7 +2309,7 @@ export default function App() {
             </svg>
           </button>
         </div>
-        {!isKeyboardOpen && <div style={{ fontSize:10,color:"#B8CED8",textAlign:"center",marginTop:6 }}>変換確定後にEnter で送信 · Shift+Enter で改行</div>}
+        {!isKeyboardOpen && <div style={{ fontSize:10,color:"#B8CED8",textAlign:"center",marginTop:6 }}>{window.matchMedia("(hover: none) and (pointer: coarse)").matches ? "ボタンで送信" : "変換確定後にEnter で送信 · Shift+Enter で改行"}</div>}
       </div>
     </div>
   );
