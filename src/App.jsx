@@ -1912,18 +1912,45 @@ export default function App() {
   const textRef = useRef(null);
   const idRef = useRef(1);
   const isComposing = useRef(false);
+  // Keyboard & layout state
+  const [appStyle, setAppStyle] = useState({});
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const kbTimer = useRef(null);
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const headerTimer = useRef(null);
+
   useEffect(() => {
-    const onFocus = () => { clearTimeout(kbTimer.current); setIsKeyboardOpen(true); };
-    const onBlur  = () => { kbTimer.current = setTimeout(() => setIsKeyboardOpen(false), 300); };
-    document.addEventListener("focusin",  onFocus);
-    document.addEventListener("focusout", onBlur);
+    const update = () => {
+      const vv = window.visualViewport;
+      if (!vv) return;
+      setAppStyle({
+        position: "fixed",
+        top: vv.offsetTop + "px",
+        left: vv.offsetLeft + "px",
+        width: vv.width + "px",
+        height: vv.height + "px",
+      });
+      setIsKeyboardOpen(vv.height < window.screen.height * 0.75);
+    };
+    update();
+    window.visualViewport?.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("scroll", update);
     return () => {
-      document.removeEventListener("focusin",  onFocus);
-      document.removeEventListener("focusout", onBlur);
+      window.visualViewport?.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("scroll", update);
     };
   }, []);
+
+  useEffect(() => {
+    clearTimeout(headerTimer.current);
+    if (!isKeyboardOpen && headerHidden) {
+      headerTimer.current = setTimeout(() => setHeaderHidden(false), 3000);
+    }
+  }, [isKeyboardOpen]);
+
+  const hideHeaderOnReply = () => {
+    if (window.innerWidth >= 1024) return;
+    setHeaderHidden(true);
+  };
 
   const t = TONES[tone];
 
@@ -2052,7 +2079,7 @@ export default function App() {
   const DiaryTab = (
     <div style={{ display:"flex",flexDirection:"column",flex:1,overflow:"hidden" }}>
       {/* Header */}
-      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,position:"sticky",top:0,background:"#EAF1F4",zIndex:30 }}>
+      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,maxHeight:headerHidden?"0":"72px",overflow:"hidden",opacity:headerHidden?0:1,transition:"max-height 0.35s ease,opacity 0.25s ease",flexShrink:0 }}>
         <div style={{ display:"flex",alignItems:"center",gap:12 }}>
           <div>
             <div style={{ fontSize:19,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
@@ -2287,8 +2314,8 @@ export default function App() {
   ];
 
   return (
-    <div style={{ minHeight:"100vh",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif" }}>
-      <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100vh" }}>
+    <div style={{ ...appStyle,background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
+      <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%" }}>
 
         {/* Page content */}
         <div style={{ flex:1,display:"flex",flexDirection:"column",overflow:"hidden" }}>
@@ -2335,7 +2362,7 @@ export default function App() {
           display:"flex",background:"#EAF1F4",
           borderTop:"1px solid #ffffff08",
           paddingBottom:"env(safe-area-inset-bottom,0px)",
-          maxHeight:isKeyboardOpen?"0px":"72px",
+          maxHeight:isKeyboardOpen?"0":"72px",
           overflow:"hidden",
           transition:"max-height 0.25s ease",
         }}>
@@ -2375,6 +2402,7 @@ export default function App() {
         textarea::placeholder{color:#252530}
         ::-webkit-scrollbar{width:3px}
         ::-webkit-scrollbar-thumb{background:#B8CED8;border-radius:2px}
+        html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;}
       `}</style>
     </div>
   );
