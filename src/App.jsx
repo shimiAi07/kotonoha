@@ -2284,7 +2284,7 @@ export default function App() {
       )}
 
       {/* Input */}
-      <div style={{ padding:"10px 18px 16px",background:"#EAF1F4",borderTop:"1px solid #ffffff06",flexShrink:0,paddingBottom:isKeyboardOpen?"8px":`calc(16px + env(safe-area-inset-bottom,0px))` }}>
+      <div style={{ padding:"6px 18px 8px",background:"#EAF1F4",borderTop:"1px solid #ffffff06",flexShrink:0,paddingBottom:isKeyboardOpen?"4px":`calc(8px + env(safe-area-inset-bottom,0px))` }}>
 
         <div style={{ display:"flex",gap:10,alignItems:"flex-end",background:"#D8E8EE",border:`1px solid ${t.color}22`,borderRadius:18,padding:"11px 14px" }}>
           <textarea
@@ -2310,7 +2310,7 @@ export default function App() {
             </svg>
           </button>
         </div>
-        {!isKeyboardOpen && <div style={{ fontSize:10,color:"#B8CED8",textAlign:"center",marginTop:6 }}>{window.matchMedia("(hover: none) and (pointer: coarse)").matches ? "ボタンで送信" : "変換確定後にEnter で送信 · Shift+Enter で改行"}</div>}
+        {!isKeyboardOpen && !isTouchDevice.current && <div style={{ fontSize:10,color:"#B8CED8",textAlign:"center",marginTop:6 }}>変換確定後にEnter で送信 · Shift+Enter で改行</div>}
       </div>
     </div>
   );
