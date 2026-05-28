@@ -1913,32 +1913,26 @@ export default function App() {
   const textRef = useRef(null);
   const idRef = useRef(1);
   const isComposing = useRef(false);
-  // Keyboard & layout state
-  const [appStyle, setAppStyle] = useState({});
+  const [vpHeight, setVpHeight] = useState(
+    () => (typeof window !== "undefined" && window.visualViewport?.height) || 800
+  );
+  const [vpTop, setVpTop] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [headerHidden, setHeaderHidden] = useState(false);
   const headerTimer = useRef(null);
 
   useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
     const update = () => {
-      const vv = window.visualViewport;
-      if (!vv) return;
-      setAppStyle({
-        position: "fixed",
-        top: vv.offsetTop + "px",
-        left: vv.offsetLeft + "px",
-        width: vv.width + "px",
-        height: vv.height + "px",
-      });
+      setVpHeight(vv.height);
+      setVpTop(vv.offsetTop);
       setIsKeyboardOpen(vv.height < window.screen.height * 0.75);
     };
     update();
-    window.visualViewport?.addEventListener("resize", update);
-    window.visualViewport?.addEventListener("scroll", update);
-    return () => {
-      window.visualViewport?.removeEventListener("resize", update);
-      window.visualViewport?.removeEventListener("scroll", update);
-    };
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update); };
   }, []);
 
   useEffect(() => {
@@ -1948,10 +1942,7 @@ export default function App() {
     }
   }, [isKeyboardOpen]);
 
-  const hideHeaderOnReply = () => {
-    if (window.innerWidth >= 1024) return;
-    setHeaderHidden(true);
-  };
+  const hideHeaderOnReply = () => { if (window.innerWidth >= 1024) return; setHeaderHidden(true); };
 
   const t = TONES[tone];
 
@@ -2261,7 +2252,7 @@ export default function App() {
       </div>
 
       {/* Input */}
-      <div style={{ padding:"10px 18px 16px",background:"#EAF1F4",borderTop:"1px solid #ffffff06" }}>
+      <div style={{ padding:"10px 18px 16px",background:"#EAF1F4",borderTop:"1px solid #ffffff06",flexShrink:0,paddingBottom:isKeyboardOpen?"10px":`calc(16px + env(safe-area-inset-bottom, 0px))` }}>
 
         <div style={{ display:"flex",gap:10,alignItems:"flex-end",background:"#D8E8EE",border:`1px solid ${t.color}22`,borderRadius:18,padding:"11px 14px" }}>
           <textarea
@@ -2315,7 +2306,7 @@ export default function App() {
   ];
 
   return (
-    <div style={{ ...appStyle,background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
+    <div style={{ position:"fixed",top:`${vpTop}px`,left:0,right:0,height:`${vpHeight}px`,background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
       <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%" }}>
 
         {/* Page content */}
@@ -2362,10 +2353,8 @@ export default function App() {
         <div style={{
           display:"flex",background:"#EAF1F4",
           borderTop:"1px solid #ffffff08",
-          paddingBottom:"env(safe-area-inset-bottom,0px)",
-          maxHeight:isKeyboardOpen?"0":"72px",
-          overflow:"hidden",
-          transition:"max-height 0.25s ease",
+          paddingBottom:isKeyboardOpen?"0":"env(safe-area-inset-bottom,0px)",
+          maxHeight:isKeyboardOpen?"0":"72px",overflow:"hidden",transition:"max-height 0.2s ease",flexShrink:0,
         }}>
           {NAV.map(nav=>(
             <button key={nav.key} onClick={()=>setTab(nav.key)} style={{
@@ -2403,7 +2392,7 @@ export default function App() {
         textarea::placeholder{color:#252530}
         ::-webkit-scrollbar{width:3px}
         ::-webkit-scrollbar-thumb{background:#B8CED8;border-radius:2px}
-        html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;}
+        html,body{margin:0;padding:0;height:100%;overflow:hidden;}
       `}</style>
     </div>
   );
