@@ -1913,6 +1913,10 @@ export default function App() {
   const textRef = useRef(null);
   const idRef = useRef(1);
   const isComposing = useRef(false);
+  const isTouchDevice = useRef(
+    typeof window !== "undefined" && window.matchMedia("(hover: none) and (pointer: coarse)").matches
+  );
+
   // ── iOS keyboard + chat focus mode ────────────────────────
   const [vpHeight, setVpHeight] = useState(
     () => (typeof window !== "undefined" ? (window.visualViewport?.height || window.innerHeight) : 800)
@@ -2289,10 +2293,7 @@ export default function App() {
             onChange={e=>{ setInput(e.target.value); e.target.style.height="auto"; e.target.style.height=Math.min(e.target.scrollHeight,130)+"px"; }}
             onCompositionStart={()=>{ isComposing.current=true; }}
             onCompositionEnd={()=>{ isComposing.current=false; }}
-            onKeyDown={e=>{
-              const isMobileDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-              if(e.key==="Enter"&&!e.shiftKey&&!isComposing.current&&!isMobileDevice){ e.preventDefault(); send(); }
-            }}
+            onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey&&!isComposing.current&&!isTouchDevice.current){ e.preventDefault(); send(); } }}
             placeholder={isPast?`${dayLabel(selected)}のことを話してね…`:"今日のこと、気持ちを話してね…"}
             rows={1}
             style={{ flex:1,background:"transparent",border:"none",outline:"none",color:"#1a2a32",fontSize:13.5,lineHeight:1.65,resize:"none",fontFamily:"inherit",maxHeight:130,overflowY:"auto" }}
