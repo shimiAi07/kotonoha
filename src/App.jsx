@@ -1913,31 +1913,17 @@ export default function App() {
   const idRef = useRef(1);
   const isComposing = useRef(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const [headerHidden, setHeaderHidden] = useState(false);
-  const headerTimer = useRef(null);
-
+  const kbTimer = useRef(null);
   useEffect(() => {
-    // Detect keyboard via focus/blur on inputs
-    const onFocus = () => setIsKeyboardOpen(true);
-    const onBlur = () => {
-      setIsKeyboardOpen(false);
-      // Restore header 3 seconds after keyboard closes
-      if (headerHidden) {
-        headerTimer.current = setTimeout(() => setHeaderHidden(false), 3000);
-      }
-    };
-    document.addEventListener("focusin", onFocus);
+    const onFocus = () => { clearTimeout(kbTimer.current); setIsKeyboardOpen(true); };
+    const onBlur  = () => { kbTimer.current = setTimeout(() => setIsKeyboardOpen(false), 300); };
+    document.addEventListener("focusin",  onFocus);
     document.addEventListener("focusout", onBlur);
     return () => {
-      document.removeEventListener("focusin", onFocus);
+      document.removeEventListener("focusin",  onFocus);
       document.removeEventListener("focusout", onBlur);
     };
-  }, [headerHidden]);
-
-  const hideHeaderOnReply = () => {
-    if (window.innerWidth >= 1024) return;
-    setHeaderHidden(true);
-  };
+  }, []);
 
   const t = TONES[tone];
 
@@ -2066,7 +2052,7 @@ export default function App() {
   const DiaryTab = (
     <div style={{ display:"flex",flexDirection:"column",flex:1,overflow:"hidden" }}>
       {/* Header */}
-      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,maxHeight:headerHidden?"0px":"72px",overflow:"hidden",opacity:headerHidden?0:1,transition:"max-height 0.35s ease,opacity 0.25s ease",flexShrink:0 }}>
+      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,position:"sticky",top:0,background:"#EAF1F4",zIndex:30 }}>
         <div style={{ display:"flex",alignItems:"center",gap:12 }}>
           <div>
             <div style={{ fontSize:19,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
@@ -2351,7 +2337,7 @@ export default function App() {
           paddingBottom:"env(safe-area-inset-bottom,0px)",
           maxHeight:isKeyboardOpen?"0px":"72px",
           overflow:"hidden",
-          transition:"max-height 0.2s ease",
+          transition:"max-height 0.25s ease",
         }}>
           {NAV.map(nav=>(
             <button key={nav.key} onClick={()=>setTab(nav.key)} style={{
@@ -2389,9 +2375,6 @@ export default function App() {
         textarea::placeholder{color:#252530}
         ::-webkit-scrollbar{width:3px}
         ::-webkit-scrollbar-thumb{background:#B8CED8;border-radius:2px}
-        * { box-sizing: border-box; }
-        html { height: 100%; }
-        body { height: 100%; margin: 0; }
       `}</style>
     </div>
   );
