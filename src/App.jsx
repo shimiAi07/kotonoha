@@ -2079,7 +2079,7 @@ export default function App() {
   const DiaryTab = (
     <div style={{ display:"flex",flexDirection:"column",flex:1,overflow:"hidden" }}>
       {/* Header */}
-      <div style={{ padding:isKeyboardOpen?"6px 14px":"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,transition:"padding 0.25s ease",flexShrink:0 }}>
+      <div style={{ padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,flexShrink:0 }}>
         <div style={{ display:"flex",alignItems:"center",gap:12 }}>
           {isKeyboardOpen ? (
             <div style={{ fontSize:13,fontWeight:700,color:"#2a4a5a" }}>
@@ -2087,8 +2087,8 @@ export default function App() {
             </div>
           ) : (
             <>
-                <div style={{ fontSize:19,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
-                <div style={{ fontSize:10,color:"#7a9aaa",marginTop:1 }}>{totalDays>0?`${totalDays}日間の記録`:"気持ちを言葉に"}</div>
+                <div style={{ fontSize:16,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
+                <div style={{ fontSize:9,color:"#7a9aaa",marginTop:1 }}>{totalDays>0?`${totalDays}日間の記録`:"気持ちを言葉に"}</div>
               <div style={{ width:1,height:32,background:"#00000010" }}/>
               <div>
                 <div style={{ fontSize:12,fontWeight:700,color:"#2a4a5a" }}>
@@ -2109,9 +2109,9 @@ export default function App() {
               </button>
             )}
             <button onClick={()=>setShowTones(v=>!v)} style={{ ...hBtn(showTones,t.color),fontWeight:600 }}>
-              <span style={{ fontSize:12 }}>{t.icon}</span>
-              <span style={{ fontSize:11 }}>会話スタイル</span>
-              <span style={{ fontSize:9,opacity:0.55,marginLeft:1 }}>{showTones?"▲":"▼"}</span>
+              <span style={{ fontSize:11 }}>{t.icon}</span>
+              <span style={{ fontSize:10 }}>スタイル</span>
+              <span style={{ fontSize:8,opacity:0.55,marginLeft:1 }}>{showTones?"▲":"▼"}</span>
             </button>
           </div>
         )}
