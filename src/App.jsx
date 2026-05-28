@@ -166,6 +166,7 @@ async function callAPI(system, messages) {
       "Content-Type":"application/json",
       "anthropic-version":"2023-06-01",
       "anthropic-dangerous-direct-browser-access":"true",
+      "x-api-key": ANTHROPIC_API_KEY,
     },
     body:JSON.stringify({ model:"claude-sonnet-4-5", max_tokens:1000, system, messages }),
   });
