@@ -2083,15 +2083,15 @@ export default function App() {
   const DiaryTab = (
     <div style={{ display:"flex",flexDirection:"column",flex:1,overflow:"hidden" }}>
       {/* Header */}
-      <div style={{ padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,flexShrink:0 }}>
-        <div style={{ display:"flex",alignItems:"center",gap:12 }}>
+      <div style={{ padding:"8px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,flexShrink:0,minHeight:0 }}>
+        <div style={{ display:"flex",alignItems:"center",gap:8 }}>
           {isKeyboardOpen ? (
             <div style={{ fontSize:13,fontWeight:700,color:"#2a4a5a" }}>
               {(()=>{ const d=new Date(selected+"T00:00:00"); return `${isPast?"📖":"✍️"} ${d.getMonth()+1}月${d.getDate()}日（${["日","月","火","水","木","金","土"][d.getDay()]}）`; })()}
             </div>
           ) : (
             <>
-                <div style={{ fontSize:16,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
+                <div style={{ fontSize:14,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px",whiteSpace:"nowrap" }}>言の葉</div>
                 <div style={{ fontSize:9,color:"#7a9aaa",marginTop:1 }}>{totalDays>0?`${totalDays}日間の記録`:"気持ちを言葉に"}</div>
               <div style={{ width:1,height:32,background:"#00000010" }}/>
               <div>
