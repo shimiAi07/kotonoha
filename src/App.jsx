@@ -1915,6 +1915,10 @@ export default function App() {
   const [vvHeight, setVvHeight] = useState(0);
   const [vvOffsetTop, setVvOffsetTop] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const headerTimer = useRef(null);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+
   useEffect(() => {
     const fullH = window.screen.height;
     const update = () => {
@@ -1934,21 +1938,17 @@ export default function App() {
     };
   }, []);
 
-  const headerRestoreTimer = useRef(null);
-  const [headerHidden, setHeaderHidden] = useState(false);
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+  useEffect(() => {
+    if (!isKeyboardOpen && headerHidden) {
+      headerTimer.current = setTimeout(() => setHeaderHidden(false), 3000);
+    }
+    return () => clearTimeout(headerTimer.current);
+  }, [isKeyboardOpen]);
 
   const hideHeaderOnReply = () => {
     if (!isMobile) return;
     setHeaderHidden(true);
   };
-
-  useEffect(() => {
-    if (!isKeyboardOpen && headerHidden) {
-      headerRestoreTimer.current = setTimeout(() => setHeaderHidden(false), 3000);
-    }
-    return () => clearTimeout(headerRestoreTimer.current);
-  }, [isKeyboardOpen]);
 
   const t = TONES[tone];
 
@@ -2077,8 +2077,7 @@ export default function App() {
   const DiaryTab = (
     <div style={{ display:"flex",flexDirection:"column",flex:1,overflow:"hidden" }}>
       {/* Header */}
-      <div style={{ overflow:"hidden", maxHeight:headerHidden?"0px":"80px", opacity:headerHidden?0:1, transition:"max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease", flexShrink:0 }}>
-      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30 }}>
+      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,maxHeight:headerHidden?"0px":"80px",overflow:"hidden",opacity:headerHidden?0:1,transition:"max-height 0.4s ease, opacity 0.3s ease",flexShrink:0 }}>
         <div style={{ display:"flex",alignItems:"center",gap:12 }}>
           <div>
             <div style={{ fontSize:19,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
@@ -2106,8 +2105,6 @@ export default function App() {
             <span style={{ fontSize:9,opacity:0.55,marginLeft:1 }}>{showTones?"▲":"▼"}</span>
           </button>
         </div>
-      </div>
-
       </div>
 
       {/* Tone panel - smooth slide down */}
@@ -2290,9 +2287,6 @@ export default function App() {
         {!isKeyboardOpen && <div style={{ fontSize:10,color:"#B8CED8",textAlign:"center",marginTop:6 }}>変換確定後にEnter で送信 · Shift+Enter で改行</div>}
       </div>
     </div>
-    </div>
-    </div>
-  </div>
   );
 
   // ── Auth gate ─────────────────────────────────────────────
@@ -2318,7 +2312,7 @@ export default function App() {
   ];
 
   return (
-    <div style={{ position:"fixed", top:vvOffsetTop+"px", left:0, right:0, height:vvHeight?vvHeight+"px":"100dvh", background:"#EAF1F4", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif", overflow:"hidden" }}>
+    <div style={{ position:"fixed",top:vvOffsetTop+"px",left:0,right:0,height:vvHeight?vvHeight+"px":"100dvh",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
       <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%" }}>
 
         {/* Page content */}
