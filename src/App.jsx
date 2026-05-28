@@ -1913,43 +1913,28 @@ export default function App() {
   const idRef = useRef(1);
   const isComposing = useRef(false);
   const [vvHeight, setVvHeight] = useState(0);
-  const [vvOffsetTop, setVvOffsetTop] = useState(0);
+  const [vvTop, setVvTop] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [headerHidden, setHeaderHidden] = useState(false);
   const headerTimer = useRef(null);
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
-
   useEffect(() => {
     const fullH = window.screen.height;
     const update = () => {
-      if (window.visualViewport) {
-        const h = window.visualViewport.height;
-        setVvHeight(h);
-        setVvOffsetTop(window.visualViewport.offsetTop);
-        setIsKeyboardOpen(h < fullH * 0.75);
-      }
+      if (!window.visualViewport) return;
+      const h = window.visualViewport.height;
+      setVvHeight(h); setVvTop(window.visualViewport.offsetTop);
+      setIsKeyboardOpen(h < fullH * 0.75);
     };
     update();
     window.visualViewport?.addEventListener("resize", update);
     window.visualViewport?.addEventListener("scroll", update);
-    return () => {
-      window.visualViewport?.removeEventListener("resize", update);
-      window.visualViewport?.removeEventListener("scroll", update);
-    };
+    return () => { window.visualViewport?.removeEventListener("resize", update); window.visualViewport?.removeEventListener("scroll", update); };
   }, []);
-
   useEffect(() => {
-    if (!isKeyboardOpen && headerHidden) {
-      headerTimer.current = setTimeout(() => setHeaderHidden(false), 3000);
-    }
+    if (!isKeyboardOpen && headerHidden) { headerTimer.current = setTimeout(() => setHeaderHidden(false), 3000); }
     return () => clearTimeout(headerTimer.current);
   }, [isKeyboardOpen]);
-
-  const hideHeaderOnReply = () => {
-    if (!isMobile) return;
-    setHeaderHidden(true);
-  };
-
+  const hideHeaderOnReply = () => { if (window.innerWidth >= 1024) return; setHeaderHidden(true); };
   const t = TONES[tone];
 
   useEffect(()=>{
@@ -2077,7 +2062,7 @@ export default function App() {
   const DiaryTab = (
     <div style={{ display:"flex",flexDirection:"column",flex:1,overflow:"hidden" }}>
       {/* Header */}
-      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,maxHeight:headerHidden?"0px":"80px",overflow:"hidden",opacity:headerHidden?0:1,transition:"max-height 0.4s ease, opacity 0.3s ease",flexShrink:0 }}>
+      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,maxHeight:headerHidden?"0px":"80px",overflow:"hidden",opacity:headerHidden?0:1,transition:"max-height 0.4s ease,opacity 0.3s ease",flexShrink:0 }}>
         <div style={{ display:"flex",alignItems:"center",gap:12 }}>
           <div>
             <div style={{ fontSize:19,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
@@ -2312,7 +2297,7 @@ export default function App() {
   ];
 
   return (
-    <div style={{ position:"fixed",top:vvOffsetTop+"px",left:0,right:0,height:vvHeight?vvHeight+"px":"100dvh",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
+    <div style={{ position:"fixed",top:vvTop+"px",left:0,right:0,height:vvHeight?vvHeight+"px":"100dvh",background:"#EAF1F4",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif",overflow:"hidden" }}>
       <div style={{ width:"100%",maxWidth:660,display:"flex",flexDirection:"column",height:"100%" }}>
 
         {/* Page content */}
@@ -2360,9 +2345,7 @@ export default function App() {
           display:"flex",background:"#EAF1F4",
           borderTop:"1px solid #ffffff08",
           paddingBottom:"env(safe-area-inset-bottom,0px)",
-          maxHeight:isKeyboardOpen?"0px":"80px",
-          overflow:"hidden",
-          transition:"max-height 0.2s ease",
+          maxHeight:isKeyboardOpen?"0px":"80px",overflow:"hidden",transition:"max-height 0.2s ease",
         }}>
           {NAV.map(nav=>(
             <button key={nav.key} onClick={()=>setTab(nav.key)} style={{
@@ -2402,6 +2385,5 @@ export default function App() {
         ::-webkit-scrollbar-thumb{background:#B8CED8;border-radius:2px}
       `}</style>
     </div>
-  </div>
   );
 }
