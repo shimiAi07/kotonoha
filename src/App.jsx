@@ -1913,13 +1913,15 @@ export default function App() {
   const textRef = useRef(null);
   const idRef = useRef(1);
   const isComposing = useRef(false);
+  // ── iOS keyboard + chat focus mode ────────────────────────
   const [vpHeight, setVpHeight] = useState(
-    () => (typeof window !== "undefined" && window.visualViewport?.height) || 800
+    () => (typeof window !== "undefined" ? (window.visualViewport?.height || window.innerHeight) : 800)
   );
   const [vpTop, setVpTop] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const [headerHidden, setHeaderHidden] = useState(false);
-  const headerTimer = useRef(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const chatAreaRef = useRef(null);
+  const isAtBottom = useRef(true);
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -1935,14 +1937,20 @@ export default function App() {
     return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update); };
   }, []);
 
-  useEffect(() => {
-    clearTimeout(headerTimer.current);
-    if (!isKeyboardOpen && headerHidden) {
-      headerTimer.current = setTimeout(() => setHeaderHidden(false), 3000);
-    }
-  }, [isKeyboardOpen]);
+  // Track scroll position to show/hide "latest" button
+  const handleChatScroll = () => {
+    const el = chatAreaRef.current;
+    if (!el) return;
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isAtBottom.current = distFromBottom < 60;
+    setShowScrollBtn(distFromBottom > 120);
+  };
 
-  const hideHeaderOnReply = () => { if (window.innerWidth >= 1024) return; setHeaderHidden(true); };
+  const scrollToBottom = (smooth = true) => {
+    const el = chatAreaRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+  };
 
   const t = TONES[tone];
 
@@ -2071,34 +2079,42 @@ export default function App() {
   const DiaryTab = (
     <div style={{ display:"flex",flexDirection:"column",flex:1,overflow:"hidden" }}>
       {/* Header */}
-      <div style={{ padding:"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,maxHeight:headerHidden?"0":"72px",overflow:"hidden",opacity:headerHidden?0:1,transition:"max-height 0.35s ease,opacity 0.25s ease",flexShrink:0 }}>
+      <div style={{ padding:isKeyboardOpen?"6px 14px":"14px 18px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${t.color}14`,background:"#EAF1F4",zIndex:30,transition:"padding 0.25s ease",flexShrink:0 }}>
         <div style={{ display:"flex",alignItems:"center",gap:12 }}>
-          <div>
-            <div style={{ fontSize:19,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
-            <div style={{ fontSize:10,color:"#7a9aaa",marginTop:1 }}>{totalDays>0?`${totalDays}日間の記録`:"気持ちを言葉に"}</div>
-          </div>
-          <div style={{ width:1,height:32,background:"#00000010" }}/>
-          <div>
-            <div style={{ fontSize:12,fontWeight:700,color:"#2a4a5a" }}>
-              {(()=>{ const d=new Date(selected+"T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日`; })()}
+          {isKeyboardOpen ? (
+            <div style={{ fontSize:13,fontWeight:700,color:"#2a4a5a" }}>
+              {(()=>{ const d=new Date(selected+"T00:00:00"); return `${isPast?"📖":"✍️"} ${d.getMonth()+1}月${d.getDate()}日（${["日","月","火","水","木","金","土"][d.getDay()]}）`; })()}
             </div>
-            <div style={{ fontSize:10,color:"#7a9aaa",marginTop:1 }}>
-              {(()=>{ const d=new Date(selected+"T00:00:00"); return ["日","月","火","水","木","金","土"][d.getDay()]+"曜日"; })()}
-            </div>
-          </div>
-        </div>
-        <div style={{ display:"flex",gap:8,alignItems:"center" }}>
-          {hasUserMsgs&&(
-            <button onClick={openSummary} style={{ ...hBtn(false,t.color),color:t.color,border:`1px solid ${t.color}35` }}>
-              📋 まとめ
-            </button>
+          ) : (
+            <>
+                <div style={{ fontSize:19,fontWeight:800,color:"#1a2a32",letterSpacing:"-0.5px" }}>言の葉</div>
+                <div style={{ fontSize:10,color:"#7a9aaa",marginTop:1 }}>{totalDays>0?`${totalDays}日間の記録`:"気持ちを言葉に"}</div>
+              <div style={{ width:1,height:32,background:"#00000010" }}/>
+              <div>
+                <div style={{ fontSize:12,fontWeight:700,color:"#2a4a5a" }}>
+                  {(()=>{ const d=new Date(selected+"T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日`; })()}
+                </div>
+                <div style={{ fontSize:10,color:"#7a9aaa",marginTop:1 }}>
+                  {(()=>{ const d=new Date(selected+"T00:00:00"); return ["日","月","火","水","木","金","土"][d.getDay()]+"曜日"; })()}
+                </div>
+              </div>
+            </>
           )}
-          <button onClick={()=>setShowTones(v=>!v)} style={{ ...hBtn(showTones,t.color),fontWeight:600 }}>
-            <span style={{ fontSize:12 }}>{t.icon}</span>
-            <span style={{ fontSize:11 }}>会話スタイル</span>
-            <span style={{ fontSize:9,opacity:0.55,marginLeft:1 }}>{showTones?"▲":"▼"}</span>
-          </button>
         </div>
+        {!isKeyboardOpen && (
+          <div style={{ display:"flex",gap:8,alignItems:"center" }}>
+            {hasUserMsgs&&(
+              <button onClick={openSummary} style={{ ...hBtn(false,t.color),color:t.color,border:`1px solid ${t.color}35` }}>
+                📋 まとめ
+              </button>
+            )}
+            <button onClick={()=>setShowTones(v=>!v)} style={{ ...hBtn(showTones,t.color),fontWeight:600 }}>
+              <span style={{ fontSize:12 }}>{t.icon}</span>
+              <span style={{ fontSize:11 }}>会話スタイル</span>
+              <span style={{ fontSize:9,opacity:0.55,marginLeft:1 }}>{showTones?"▲":"▼"}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tone panel - smooth slide down */}
@@ -2127,7 +2143,7 @@ export default function App() {
       </div>
 
       {/* Date bar */}
-      <div style={{ padding:"8px 18px",background:"#E0ECF2",borderBottom:"1px solid #ffffff05",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:49,zIndex:28 }}>
+      {!isKeyboardOpen && <div style={{ padding:"8px 18px",background:"#E0ECF2",borderBottom:"1px solid #ffffff05",display:"flex",alignItems:"center",justifyContent:"space-between",zIndex:28 }}>
         <div style={{ display:"flex",alignItems:"center",gap:8 }}>
           <button onClick={()=>{setShowDatePicker(v=>!v);setShowScoreEditor(false);}} style={{
             background:"transparent",border:"none",cursor:"pointer",fontFamily:"inherit",
@@ -2158,7 +2174,7 @@ export default function App() {
         {selected!==TODAY&&(
           <button onClick={()=>setSelected(TODAY)} style={{ background:"transparent",border:"none",cursor:"pointer",color:"#7a9aaa",fontSize:11,fontFamily:"inherit" }}>今日に戻る →</button>
         )}
-      </div>
+        </div>}
 
       {/* Score editor panel */}
       <div style={{
@@ -2238,7 +2254,7 @@ export default function App() {
       </div>
 
       {/* Messages */}
-      <div style={{ flex:1,padding:"20px 18px 8px",display:"flex",flexDirection:"column",gap:14,overflowY:"auto" }}>
+      <div ref={chatAreaRef} onScroll={handleChatScroll} style={{ flex:1,padding:"20px 18px 8px",display:"flex",flexDirection:"column",gap:14,overflowY:"auto",position:"relative" }}>
         {msgs.map(msg=><Bubble key={msg.id} msg={msg} t={t}/>)}
         {loading&&(
           <div style={{ display:"flex",alignItems:"flex-end",gap:8 }}>
@@ -2251,8 +2267,20 @@ export default function App() {
         <div ref={bottomRef}/>
       </div>
 
+      {showScrollBtn && (
+        <button onClick={()=>scrollToBottom()} style={{
+          position:"absolute",bottom:"80px",right:"18px",zIndex:50,
+          background:t.accent,color:"#fff",border:"none",
+          borderRadius:"20px",padding:"6px 14px",
+          fontSize:12,fontWeight:600,cursor:"pointer",
+          boxShadow:"0 2px 12px rgba(0,0,0,0.18)",
+          display:"flex",alignItems:"center",gap:5,
+          fontFamily:"inherit",
+        }}>↓ 最新へ</button>
+      )}
+
       {/* Input */}
-      <div style={{ padding:"10px 18px 16px",background:"#EAF1F4",borderTop:"1px solid #ffffff06",flexShrink:0,paddingBottom:isKeyboardOpen?"10px":`calc(16px + env(safe-area-inset-bottom, 0px))` }}>
+      <div style={{ padding:"10px 18px 16px",background:"#EAF1F4",borderTop:"1px solid #ffffff06",flexShrink:0,paddingBottom:isKeyboardOpen?"8px":`calc(16px + env(safe-area-inset-bottom,0px))` }}>
 
         <div style={{ display:"flex",gap:10,alignItems:"flex-end",background:"#D8E8EE",border:`1px solid ${t.color}22`,borderRadius:18,padding:"11px 14px" }}>
           <textarea
